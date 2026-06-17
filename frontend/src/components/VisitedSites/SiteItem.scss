@@ -1,0 +1,33 @@
+.site-item {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+  }
+
+  .site-thumbnail {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+  }
+
+  .site-info {
+    padding: 1rem;
+
+    h4 {
+      margin: 0 0 0.5rem;
+      font-size: 1.2rem;
+      color: #8B4513;
+    }
+
+    p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #666;
+    }
+  }
+}

@@ -1,0 +1,18 @@
+.chat-bot-page {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 60px); // Adjust this value based on your navbar height
+
+  h2 {
+    text-align: center;
+    margin: 1rem 0;
+    color: #8B4513;
+  }
+
+  .chat-bot {
+    flex: 1;
+    border: 1px solid #e0e0e0;
+    border-radius: 0.5rem;
+    overflow: hidden;
+  }
+}

@@ -1,0 +1,37 @@
+# --- Global / OS Files ---
+.DS_Store
+Thumbs.db
+Desktop.ini
+*~
+
+# --- React (Vite) Frontend ---
+frontend/node_modules/
+frontend/dist/
+frontend/.eslintcache
+frontend/*.local
+
+# --- Spring Boot (Java) Backend ---
+backend/target/
+backend/build/
+backend/.gradle/
+backend/.settings/
+backend/.project
+backend/.classpath
+backend/.factorypath
+backend/.springBeans
+backend/.sts4-cache
+backend/out/
+backend/bin/
+backend/*.log
+
+# --- IDE Settings ---
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# --- Environment Files ---
+# It is best practice to keep .env files out of source control
+.env
+.env.*
