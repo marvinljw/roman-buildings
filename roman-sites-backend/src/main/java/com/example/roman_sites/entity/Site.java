@@ -11,20 +11,20 @@ import lombok.*;
 
 @Entity
 @Table(name = "ancient_sites")
-@Data 
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Site {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
     private String description;
+    private String imageUrl;
 
     @Enumerated(EnumType.STRING)
-    private Civilization civilization; 
+    private Civilization civilization;
     
     private Double latitude;
     private Double longitude;
