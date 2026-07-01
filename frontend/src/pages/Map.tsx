@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
+import { Typography } from '@mui/material';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import greenIcon from '../assets/icons/marker-icon-green.png?url';
 import defaultIcon from '../assets/icons/marker-icon.png?url';
-import UploadLocationForm from '../components/UploadLocationForm';
+import UploadLocationForm from '../components/common/UploadLocationForm';
+import { getSites, markSiteAsVisited, unmarkSiteAsVisited } from '../services';
 
 interface Site {
   id: number;
@@ -39,20 +41,56 @@ interface MapProps {
 }
 
 const Map: React.FC<MapProps> = ({ setSites }) => {
-  const [localSites, setLocalSites] = useState<Site[]>(dummySites);
+  const [localSites, setLocalSites] = useState<Site[]>([]);
   const [showSidebar, setShowSidebar] = useState(false);
   const [newMarkerPosition, setNewMarkerPosition] = useState<[number, number] | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchSites = async () => {
+    try {
+      const sitesData = await getSites();
+      const transformedSites = sitesData.map((site: any) => ({
+        id: site.id,
+        name: site.name,
+        latitude: site.latitude,
+        longitude: site.longitude,
+        imageUrl: site.imageUrl || 'https://via.placeholder.com/400x300?text=No+Image',
+        description: site.description,
+        yearBuilt: site.yearBuilt || 0,
+        visited: site.visited || false,
+        country: site.country || 'Unknown'
+      }));
+      setLocalSites(transformedSites);
+      setSites(transformedSites);
+    } catch (error) {
+      console.error('Failed to fetch sites:', error);
+      setLocalSites(dummySites);
+      setSites(dummySites);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    setSites(localSites);
-  }, [localSites, setSites]);
+    fetchSites();
+  }, [setSites]);
 
-  const toggleVisited = (id: number) => {
-    setLocalSites(prevSites =>
-      prevSites.map(site =>
-        site.id === id ? { ...site, visited: !site.visited } : site
-      )
-    );
+  const toggleVisited = async (id: number) => {
+    const site = localSites.find(s => s.id === id);
+    if (!site) return;
+
+    try {
+      if (site.visited) {
+        await unmarkSiteAsVisited(id);
+      } else {
+        await markSiteAsVisited(id);
+      }
+
+      // Refresh sites from backend to get updated visited status
+      await fetchSites();
+    } catch (error) {
+      console.error('Failed to toggle visited status:', error);
+    }
   };
 
   const visitedIcon = useMemo(() => new L.Icon({
@@ -98,6 +136,14 @@ const Map: React.FC<MapProps> = ({ setSites }) => {
     });
     return null;
   };
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 'calc(100vh - 60px)' }}>
+        <Typography variant="h6">Loading sites...</Typography>
+      </div>
+    );
+  }
 
   return (
     <div style={{ position: 'relative', height: 'calc(100vh - 60px)' }}>

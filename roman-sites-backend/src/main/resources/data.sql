@@ -1,11 +1,11 @@
-INSERT INTO ancient_sites (id, civilization, description, image_url, latitude, longitude, name) VALUES 
-(DEFAULT, 'ROMAN', 'Ancient amphitheatre in Rome.', 'https://example.com/colosseum.jpg', 41.8902, 12.4922, 'Colosseum'),
-(DEFAULT, 'GREEK', 'Temple on the Athenian Acropolis.', 'https://example.com/parthenon.jpg', 37.9715, 23.7267, 'Parthenon'),
-(DEFAULT, 'EGYPTIAN', 'Largest of the Giza pyramids.', 'https://example.com/giza.jpg', 29.9792, 31.1342, 'Pyramid of Giza'),
-(DEFAULT, 'CARTHAGINIAN', 'Ancient port city remains.', 'https://example.com/carthage.jpg', 36.8540, 10.3340, 'Carthage'),
-(DEFAULT, 'BYZANTINE', 'Iconic former cathedral.', 'https://example.com/hagia.jpg', 41.0086, 28.9802, 'Hagia Sophia'),
-(DEFAULT, 'ROMAN', 'Best-preserved Roman temple.', 'https://example.com/pantheon.jpg', 41.8986, 12.4769, 'Pantheon'),
-(DEFAULT, 'GREEK', 'Ancient site of the Olympic Games.', 'https://example.com/olympia.jpg', 37.6380, 21.6300, 'Olympia'),
-(DEFAULT, 'EGYPTIAN', 'Temple complex in Luxor.', 'https://example.com/karnak.jpg', 25.7188, 32.5732, 'Karnak Temple'),
-(DEFAULT, 'BYZANTINE', 'Ancient cistern in Istanbul.', 'https://example.com/basilica.jpg', 41.0084, 28.9779, 'Basilica Cistern'),
-(DEFAULT, 'CARTHAGINIAN', 'Tophet of Carthage site.', 'https://example.com/tophet.jpg', 36.8436, 10.3236, 'Tophet');
+INSERT INTO ancient_sites (id, civilization, description, image_url, latitude, longitude, name, country, year_built) VALUES
+(DEFAULT, 'ROMAN', 'Ancient amphitheatre in Rome.', 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Colosseo_2020.jpg/800px-Colosseo_2020.jpg', 41.8902, 12.4922, 'Colosseum', 'Italy', 80),
+(DEFAULT, 'GREEK', 'Temple on the Athenian Acropolis.', 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/The_Parthenon_in_Athens.jpg/800px-The_Parthenon_in_Athens.jpg', 37.9715, 23.7267, 'Parthenon', 'Greece', -447),
+(DEFAULT, 'EGYPTIAN', 'Largest of the Giza pyramids.', 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Kheops-Pyramid.jpg/800px-Kheops-Pyramid.jpg', 29.9792, 31.1342, 'Pyramid of Giza', 'Egypt', -2560),
+(DEFAULT, 'CARTHAGINIAN', 'Ancient port city remains.', 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Carthage_National_Museum_-_Carthage%2C_Tunisia_-_The_ancient_Roman_port.jpg/800px-Carthage_National_Museum_-_Carthage%2C_Tunisia_-_The_ancient_Roman_port.jpg', 36.8540, 10.3340, 'Carthage', 'Tunisia', -814),
+(DEFAULT, 'BYZANTINE', 'Iconic former cathedral.', 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Hagia_Sophia_Mars_2013.jpg/800px-Hagia_Sophia_Mars_2013.jpg', 41.0086, 28.9802, 'Hagia Sophia', 'Turkey', 537),
+(DEFAULT, 'ROMAN', 'Best-preserved Roman temple.', 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Pantheon_Rome_2023.jpg/800px-Pantheon_Rome_2023.jpg', 41.8986, 12.4769, 'Pantheon', 'Italy', 126),
+(DEFAULT, 'GREEK', 'Ancient site of the Olympic Games.', 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Temple_of_Hera%2C_Olympia%2C_Greece.jpg/800px-Temple_of_Hera%2C_Olympia%2C_Greece.jpg', 37.6380, 21.6300, 'Olympia', 'Greece', -776),
+(DEFAULT, 'EGYPTIAN', 'Temple complex in Luxor.', 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Karnak_Tempel_06.jpg/800px-Karnak_Tempel_06.jpg', 25.7188, 32.5732, 'Karnak Temple', 'Egypt', -2055),
+(DEFAULT, 'BYZANTINE', 'Ancient cistern in Istanbul.', 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Yerebatan_Saray%C4%B1_-_Basilica_Cistern.jpg/800px-Yerebatan_Saray%C4%B1_-_Basilica_Cistern.jpg', 41.0084, 28.9779, 'Basilica Cistern', 'Turkey', 532),
+(DEFAULT, 'CARTHAGINIAN', 'Tophet of Carthage site.', 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Tophet_Carthage.jpg/800px-Tophet_Carthage.jpg', 36.8436, 10.3236, 'Tophet', 'Tunisia', -400);

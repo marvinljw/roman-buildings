@@ -25,7 +25,9 @@ public class Site {
 
     @Enumerated(EnumType.STRING)
     private Civilization civilization;
-    
+
     private Double latitude;
     private Double longitude;
+    private String country;
+    private Integer yearBuilt;
 }

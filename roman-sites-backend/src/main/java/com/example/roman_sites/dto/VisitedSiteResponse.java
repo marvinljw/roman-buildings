@@ -1,6 +1,8 @@
 package com.example.roman_sites.dto;
 
-public record SiteResponse(
+import java.time.LocalDateTime;
+
+public record VisitedSiteResponse(
     Long id,
     String name,
     String description,
@@ -10,5 +12,5 @@ public record SiteResponse(
     Double longitude,
     String country,
     Integer yearBuilt,
-    Boolean visited
+    LocalDateTime visitedDate
 ) {}

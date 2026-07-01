@@ -13,7 +13,8 @@ import Map from './pages/Map';
 import VisitedSitesPage from './pages/VisitedSitesPage';
 import ChatBot from './pages/ChatBot';
 import Login from './pages/Login';
-import ProfileSidebar from './components/ProfileSidebar';
+import Register from './pages/Register';
+import ProfileSidebar from './components/common/ProfileSidebar';
 import { Site } from './types';
 import theme from './styles/theme';
 import './App.scss';
@@ -25,12 +26,28 @@ const App: React.FC = () => {
   const [username, setUsername] = useState('');
   const navigate = useNavigate();
 
+  React.useEffect(() => {
+    const token = localStorage.getItem('token');
+    const savedUsername = localStorage.getItem('username');
+    if (token && savedUsername) {
+      setIsAuthenticated(true);
+      setUsername(savedUsername);
+    }
+  }, []);
+
   const handleLogin = (loggedInUsername: string) => {
     setIsAuthenticated(true);
     setUsername(loggedInUsername);
   };
 
+  const handleRegister = (registeredUsername: string) => {
+    setIsAuthenticated(true);
+    setUsername(registeredUsername);
+  };
+
   const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
     setIsAuthenticated(false);
     setUsername('');
     navigate('/login');
@@ -79,6 +96,9 @@ const App: React.FC = () => {
         <Routes>
           <Route path="/login" element={
             isAuthenticated ? <Navigate to="/" /> : <Login onLogin={handleLogin} />
+          } />
+          <Route path="/register" element={
+            isAuthenticated ? <Navigate to="/" /> : <Register onRegister={handleRegister} />
           } />
           <Route path="/" element={
             isAuthenticated ? <Map setSites={setSites} /> : <Navigate to="/login" />
