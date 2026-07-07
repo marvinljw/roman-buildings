@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import MarkerClusterGroup from 'react-leaflet-cluster';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { Site } from '../../types';
@@ -12,11 +13,6 @@ interface MapComponentProps {
 
 const MapComponent: React.FC<MapComponentProps> = ({ setSites }) => {
   const [localSites, setLocalSites] = useState<Site[]>([]);
-
-  useEffect(() => {
-    // In a real app, you would fetch the sites from an API
-    setLocalSites(dummySites);
-  }, []);
 
   useEffect(() => {
     setSites(localSites);
@@ -47,24 +43,27 @@ const MapComponent: React.FC<MapComponentProps> = ({ setSites }) => {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
-      {localSites.map((site) => (
-        <Marker
-          key={site.id}
-          position={[site.latitude, site.longitude]}
-          icon={getMarkerIcon(site.visited)}
-        >
-          <Popup>
-            <SitePopup site={site} onToggleVisited={() => toggleVisited(site.id)} />
-          </Popup>
-        </Marker>
-      ))}
+      <MarkerClusterGroup
+        chunkedLoading
+        maxClusterRadius={50}
+        spiderfyOnMaxZoom={true}
+        showCoverageOnHover={false}
+        zoomToBoundsOnClick={true}
+      >
+        {localSites.map((site) => (
+          <Marker
+            key={site.id}
+            position={[site.latitude, site.longitude]}
+            icon={getMarkerIcon(site.visited)}
+          >
+            <Popup>
+              <SitePopup site={site} onToggleVisited={() => toggleVisited(site.id)} />
+            </Popup>
+          </Marker>
+        ))}
+      </MarkerClusterGroup>
     </MapContainer>
   );
 };
 
 export default MapComponent;
-
-// Dummy data (in a real app, this would be fetched from an API)
-const dummySites: Site[] = [
-  // ... (keep the existing dummy data here)
-];

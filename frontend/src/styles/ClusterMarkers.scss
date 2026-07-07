@@ -1,0 +1,71 @@
+.custom-cluster {
+  background: transparent !important;
+  border: none !important;
+}
+
+.custom-cluster-icon {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.cluster-marker {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &::before {
+    content: '';
+    position: absolute;
+    width: 70%;
+    height: 70%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+    border: 2px solid white;
+  }
+
+  span {
+    position: relative;
+    z-index: 1;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    transform: translateY(-10%);
+  }
+
+  &:hover::before {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4192 100%);
+    transform: rotate(-45deg) scale(1.1);
+    transition: all 0.2s ease;
+  }
+}
+
+// Size variations
+.custom-cluster-icon {
+  &[style*="width: 40px"] {
+    .cluster-marker span {
+      font-size: 12px;
+    }
+  }
+
+  &[style*="width: 50px"] {
+    .cluster-marker span {
+      font-size: 14px;
+    }
+  }
+
+  &[style*="width: 60px"] {
+    .cluster-marker span {
+      font-size: 16px;
+    }
+  }
+}

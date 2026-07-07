@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
+import MarkerClusterGroup from 'react-leaflet-cluster';
 import { Typography } from '@mui/material';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import greenIcon from '../assets/icons/marker-icon-green.png?url';
 import defaultIcon from '../assets/icons/marker-icon.png?url';
 import UploadLocationForm from '../components/common/UploadLocationForm';
+import OptimizedImage from '../components/common/OptimizedImage';
 import { getSites, markSiteAsVisited, unmarkSiteAsVisited } from '../services';
+import '../components/Map/SitePopup.scss';
+import '../styles/ClusterMarkers.scss';
 
 interface Site {
   id: number;
@@ -27,7 +31,7 @@ const dummySites: Site[] = [
     name: "Colosseum",
     latitude: 41.8902,
     longitude: 12.4922,
-    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Colosseo_2020.jpg/640px-Colosseo_2020.jpg",
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/d/de/Colosseo_2020.jpg",
     description: "An iconic symbol of Imperial Rome and its architectural prowess.",
     yearBuilt: 80,
     visited: false,
@@ -107,6 +111,21 @@ const Map: React.FC<MapProps> = ({ setSites }) => {
     popupAnchor: [1, -34],
   }), []);
 
+  const createClusterCustomIcon = (cluster: any) => {
+    const count = cluster.getChildCount();
+    const size = count < 10 ? 40 : count < 100 ? 50 : 60;
+
+    return L.divIcon({
+      html: `<div class="custom-cluster-icon">
+               <div class="cluster-marker">
+                 <span>${count}</span>
+               </div>
+             </div>`,
+      className: 'custom-cluster',
+      iconSize: L.point(size, size, true),
+    });
+  };
+
   const handleNewLocation = (location: {
     name: string;
     latitude: number;
@@ -157,26 +176,40 @@ const Map: React.FC<MapProps> = ({ setSites }) => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         <MapEvents />
-        {localSites.map((site) => (
-          <Marker
-            key={site.id}
-            position={[site.latitude, site.longitude]}
-            icon={site.visited ? visitedIcon : defaultLeafletIcon}
-          >
-            <Popup>
-              <div className="site-popup">
-                <h3>{site.name}</h3>
-                <img src={site.imageUrl} alt={site.name} style={{ maxWidth: '100%', height: 'auto' }} />
-                <p>{site.description}</p>
-                <p><strong>Year built:</strong> {site.yearBuilt}</p>
-                <p><strong>Country:</strong> {site.country}</p>
-                <button onClick={() => toggleVisited(site.id)} className="toggle-visited-btn">
-                  {site.visited ? 'Mark as Unvisited' : 'Mark as Visited'}
-                </button>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+        <MarkerClusterGroup
+          chunkedLoading
+          maxClusterRadius={60}
+          spiderfyOnMaxZoom={true}
+          showCoverageOnHover={false}
+          zoomToBoundsOnClick={true}
+          disableClusteringAtZoom={15}
+          iconCreateFunction={createClusterCustomIcon}
+        >
+          {localSites.map((site) => (
+            <Marker
+              key={site.id}
+              position={[site.latitude, site.longitude]}
+              icon={site.visited ? visitedIcon : defaultLeafletIcon}
+            >
+              <Popup>
+                <div className="site-popup">
+                  <h3>{site.name}</h3>
+                  <div className="popup-image-container">
+                    <OptimizedImage src={site.imageUrl} alt={site.name} />
+                  </div>
+                  <div className="popup-content">
+                    <p className="description">{site.description}</p>
+                    <p><strong>Year built:</strong> {site.yearBuilt}</p>
+                    <p><strong>Country:</strong> {site.country}</p>
+                  </div>
+                  <button onClick={() => toggleVisited(site.id)} className="toggle-visited-btn">
+                    {site.visited ? 'Mark as Unvisited' : 'Mark as Visited'}
+                  </button>
+                </div>
+              </Popup>
+            </Marker>
+          ))}
+        </MarkerClusterGroup>
         {newMarkerPosition && (
           <Marker position={newMarkerPosition} icon={defaultLeafletIcon}>
             <Popup>

@@ -17,6 +17,7 @@ import Register from './pages/Register';
 import ProfileSidebar from './components/common/ProfileSidebar';
 import { Site } from './types';
 import theme from './styles/theme';
+import { AUTH_LOGOUT_EVENT, clearAuthSession } from './services/authService';
 import './App.scss';
 
 const App: React.FC = () => {
@@ -35,6 +36,21 @@ const App: React.FC = () => {
     }
   }, []);
 
+  React.useEffect(() => {
+    const handleUnauthenticated = () => {
+      setIsAuthenticated(false);
+      setUsername('');
+      setShowProfileSidebar(false);
+      navigate('/login');
+    };
+
+    window.addEventListener(AUTH_LOGOUT_EVENT, handleUnauthenticated);
+
+    return () => {
+      window.removeEventListener(AUTH_LOGOUT_EVENT, handleUnauthenticated);
+    };
+  }, [navigate]);
+
   const handleLogin = (loggedInUsername: string) => {
     setIsAuthenticated(true);
     setUsername(loggedInUsername);
@@ -46,10 +62,10 @@ const App: React.FC = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('username');
+    clearAuthSession();
     setIsAuthenticated(false);
     setUsername('');
+    setShowProfileSidebar(false);
     navigate('/login');
   };
 

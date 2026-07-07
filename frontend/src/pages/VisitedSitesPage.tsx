@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import CountrySection from '../components/VisitedSites/CountrySection';
 import { Site } from '../types';
 import { getMyVisitedSites } from '../services';
+import './VisitedSitesPage.scss';
 
 interface VisitedSitesPageProps {
   sites: Site[];
