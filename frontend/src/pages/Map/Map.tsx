@@ -1,16 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
-import MarkerClusterGroup from 'react-leaflet-cluster';
+import { Marker, Popup, useMapEvents } from 'react-leaflet';
 import { Typography } from '@mui/material';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import greenIcon from '../assets/icons/marker-icon-green.png?url';
-import defaultIcon from '../assets/icons/marker-icon.png?url';
-import UploadLocationForm from '../components/common/UploadLocationForm';
-import OptimizedImage from '../components/common/OptimizedImage';
-import { getSites, markSiteAsVisited, unmarkSiteAsVisited } from '../services';
-import '../components/Map/SitePopup.scss';
-import '../styles/ClusterMarkers.scss';
+import greenIcon from '../../assets/icons/marker-icon-green.png?url';
+import defaultIcon from '../../assets/icons/marker-icon.png?url';
+import MapComponent from '../../components/Map/MapComponent';
+import UploadLocationForm from '../../components/common/UploadLocationForm';
+import { getSites, markSiteAsVisited, unmarkSiteAsVisited } from '../../services';
+import './MapPage.scss';
 
 interface Site {
   id: number;
@@ -111,21 +109,6 @@ const Map: React.FC<MapProps> = ({ setSites }) => {
     popupAnchor: [1, -34],
   }), []);
 
-  const createClusterCustomIcon = (cluster: any) => {
-    const count = cluster.getChildCount();
-    const size = count < 10 ? 40 : count < 100 ? 50 : 60;
-
-    return L.divIcon({
-      html: `<div class="custom-cluster-icon">
-               <div class="cluster-marker">
-                 <span>${count}</span>
-               </div>
-             </div>`,
-      className: 'custom-cluster',
-      iconSize: L.point(size, size, true),
-    });
-  };
-
   const handleNewLocation = (location: {
     name: string;
     latitude: number;
@@ -158,58 +141,21 @@ const Map: React.FC<MapProps> = ({ setSites }) => {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 'calc(100vh - 60px)' }}>
+      <div className="map-page__loading">
         <Typography variant="h6">Loading sites...</Typography>
       </div>
     );
   }
 
   return (
-    <div style={{ position: 'relative', height: 'calc(100vh - 60px)' }}>
-      <MapContainer
-        center={[48.8566, 2.3522]}
-        zoom={4}
-        style={{ height: '100%', width: '100%' }}
+    <div className="map-page">
+      <MapComponent
+        sites={localSites}
+        onToggleVisited={toggleVisited}
+        visitedIcon={visitedIcon}
+        defaultIcon={defaultLeafletIcon}
       >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        />
         <MapEvents />
-        <MarkerClusterGroup
-          chunkedLoading
-          maxClusterRadius={60}
-          spiderfyOnMaxZoom={true}
-          showCoverageOnHover={false}
-          zoomToBoundsOnClick={true}
-          disableClusteringAtZoom={15}
-          iconCreateFunction={createClusterCustomIcon}
-        >
-          {localSites.map((site) => (
-            <Marker
-              key={site.id}
-              position={[site.latitude, site.longitude]}
-              icon={site.visited ? visitedIcon : defaultLeafletIcon}
-            >
-              <Popup>
-                <div className="site-popup">
-                  <h3>{site.name}</h3>
-                  <div className="popup-image-container">
-                    <OptimizedImage src={site.imageUrl} alt={site.name} />
-                  </div>
-                  <div className="popup-content">
-                    <p className="description">{site.description}</p>
-                    <p><strong>Year built:</strong> {site.yearBuilt}</p>
-                    <p><strong>Country:</strong> {site.country}</p>
-                  </div>
-                  <button onClick={() => toggleVisited(site.id)} className="toggle-visited-btn">
-                    {site.visited ? 'Mark as Unvisited' : 'Mark as Visited'}
-                  </button>
-                </div>
-              </Popup>
-            </Marker>
-          ))}
-        </MarkerClusterGroup>
         {newMarkerPosition && (
           <Marker position={newMarkerPosition} icon={defaultLeafletIcon}>
             <Popup>
@@ -221,51 +167,22 @@ const Map: React.FC<MapProps> = ({ setSites }) => {
             </Popup>
           </Marker>
         )}
-      </MapContainer>
+      </MapComponent>
       <button
         onClick={() => setShowSidebar(!showSidebar)}
-        style={{
-          position: 'absolute',
-          top: '10px',
-          right: '10px',
-          zIndex: 1000,
-          padding: '10px',
-          backgroundColor: '#fff',
-          border: '2px solid rgba(0,0,0,0.2)',
-          borderRadius: '4px',
-          cursor: 'pointer'
-        }}
+        className="map-page__add-location-btn"
       >
         {showSidebar ? 'Hide Sidebar' : 'Add New Location'}
       </button>
       {showSidebar && (
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          right: 0,
-          width: '400px',
-          height: '100%',
-          backgroundColor: 'white',
-          boxShadow: '-2px 0 5px rgba(0,0,0,0.1)',
-          zIndex: 1001,
-          padding: '20px',
-          overflowY: 'auto'
-        }}>
+        <div className="map-page__sidebar">
           <button
             onClick={() => setShowSidebar(false)}
-            style={{
-              position: 'absolute',
-              top: '10px',
-              right: '10px',
-              background: 'none',
-              border: 'none',
-              fontSize: '1.5rem',
-              cursor: 'pointer'
-            }}
+            className="map-page__sidebar-close"
           >
             &times;
           </button>
-          <h2>Add New Location</h2>
+          <h2 className="map-page__sidebar-title">Add New Location</h2>
           <UploadLocationForm
             onLocationSubmit={handleNewLocation}
             initialLatitude={newMarkerPosition ? newMarkerPosition[0] : undefined}

@@ -9,11 +9,11 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 
-import Map from './pages/Map';
-import VisitedSitesPage from './pages/VisitedSitesPage';
-import ChatBot from './pages/ChatBot';
-import Login from './pages/Login';
-import Register from './pages/Register';
+import Map from './pages/Map/Map';
+import VisitedSitesPage from './pages/VisitedSites/VisitedSitesPage';
+import ChatBot from './pages/ChatBot/ChatBot';
+import Login from './pages/Login/Login';
+import Register from './pages/Register/Register';
 import ProfileSidebar from './components/common/ProfileSidebar';
 import { Site } from './types';
 import theme from './styles/theme';
