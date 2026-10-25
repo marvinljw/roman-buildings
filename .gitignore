@@ -69,8 +69,11 @@ build/
 
 ### VS Code ###
 .vscode/
+
 ### Local H2 database ###
-roman-sites-backend/data/
+# The database file itself (data/roman-sites.mv.db) is committed; H2's runtime lock and trace files are not.
+roman-sites-backend/data/*.lock.db
+roman-sites-backend/data/*.trace.db
 
 ### Seed script caches ###
 scripts/.cache/
