@@ -2,12 +2,23 @@ import React, { useState, useEffect, useRef } from 'react';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import HistoryEduIcon from '@mui/icons-material/HistoryEdu';
 import SendIcon from '@mui/icons-material/Send';
+import { chatErrorMessage, getChatResponse } from '../../services/chatService';
 import './ChatBot.scss';
 
 interface Message {
   text: string;
   isUser: boolean;
+  // Error bubbles are shown to the user but not sent back to the AI as history.
+  isError?: boolean;
 }
+
+// Renders **bold** from the AI's replies; everything else stays plain text (line breaks are kept by CSS).
+const formatReply = (text: string) =>
+  text.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
+    part.startsWith('**') && part.endsWith('**') && part.length > 4
+      ? <strong key={i}>{part.slice(2, -2)}</strong>
+      : part
+  );
 
 const suggestions = [
   'Tell me about the Colosseum',
@@ -30,36 +41,28 @@ const ChatBot: React.FC = () => {
     if (!trimmedMessage || isThinking) return;
 
     const userMessage: Message = { text: trimmedMessage, isUser: true };
-    setMessages(prev => [...prev, userMessage]);
+    const conversation = [...messages, userMessage];
+    setMessages(conversation);
     setInput('');
     setIsThinking(true);
 
-    const botResponse = await mockAIResponse(trimmedMessage);
-    const botMessage: Message = { text: botResponse, isUser: false };
-    setMessages(prev => [...prev, botMessage]);
-    setIsThinking(false);
+    try {
+      const reply = await getChatResponse(
+        conversation
+          .filter(m => !m.isError)
+          .map(m => ({ role: m.isUser ? 'user' as const : 'assistant' as const, content: m.text }))
+      );
+      setMessages(prev => [...prev, { text: reply, isUser: false }]);
+    } catch (error) {
+      setMessages(prev => [...prev, { text: chatErrorMessage(error), isUser: false, isError: true }]);
+    } finally {
+      setIsThinking(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await sendMessage(input);
-  };
-
-  const mockAIResponse = async (query: string): Promise<string> => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    const lowerQuery = query.toLowerCase();
-    if (lowerQuery.includes('roman empire')) {
-      return "The Roman Empire was one of the largest and most influential empires in world history. It lasted from 27 BC to 476 AD, spanning across Europe, North Africa, and the Middle East.";
-    } else if (lowerQuery.includes('architecture')) {
-      return "Roman architecture was renowned for its durability, functionality, and beauty. Key elements include the arch, the dome, and the use of concrete. Famous examples include the Colosseum, Pantheon, and numerous aqueducts.";
-    } else if (lowerQuery.includes('colosseum')) {
-      return "The Colosseum, also known as the Flavian Amphitheatre, is an iconic symbol of Imperial Rome. Built around 70-80 AD, it could hold up to 80,000 spectators for gladiatorial contests and public spectacles.";
-    } else if (lowerQuery.includes('pantheon')) {
-      return "The Pantheon in Rome is a former Roman temple, now a church, commissioned by Marcus Agrippa during the reign of Augustus. The current building was completed by emperor Hadrian and probably dedicated around 126 AD. Its dome remains the world's largest unreinforced concrete dome.";
-    } else {
-      return "I'm an AI assistant specializing in Roman history and architecture. Feel free to ask about specific Roman sites, architectural techniques, or historical events!";
-    }
   };
 
   return (
@@ -100,8 +103,8 @@ const ChatBot: React.FC = () => {
             <div className="message-avatar" aria-hidden="true">
               {message.isUser ? 'You' : 'AI'}
             </div>
-            <div className="message">
-              {message.text}
+            <div className={`message${message.isError ? ' message--error' : ''}`} role={message.isError ? 'alert' : undefined}>
+              {message.isUser || message.isError ? message.text : formatReply(message.text)}
             </div>
           </div>
         ))}

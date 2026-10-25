@@ -73,9 +73,54 @@ The application follows a client-server architecture:
    - Run `mvn spring-boot:run`
 3. Set up the frontend:
    - Navigate to the `frontend` directory
-   - Run `npm install`
+   - Run `npm install --legacy-peer-deps`
    - Run `npm start`
-4. Open a web browser and go to `http://localhost:3000`
+4. Open a web browser and go to `http://localhost:5173`
+
+## Site Data
+
+- The backend seeds about 1,180 ancient sites (about 960 of them in Europe) from
+  `roman-sites-backend/src/main/resources/seed/`:
+  - `curated-sites.sql` – the hand-picked starter sites (loaded into an empty database only)
+  - `wikidata-sites.sql` – generated from Wikidata (coordinates, photo, country, year built).
+    It is merged on every start, so newly imported sites appear without losing what you marked as seen.
+- The database is a file in `roman-sites-backend/data/`, so "seen" ticks survive restarts.
+  Delete that folder to start over from the seed data.
+- To refresh the Wikidata list, run `node scripts/import-wikidata-sites.mjs` from the repo root and restart the backend.
+- `public-ratings.sql` gives every site a 1–5 star public rating, applied on every start. It comes from
+  `node scripts/compute-public-ratings.mjs` (run it after importing new sites), which scores each site on
+  English Wikipedia page views over the last 12 months, how many Wikipedias cover it, and UNESCO World Heritage
+  status, then splits all sites evenly into five star levels. Small, little-known sites end up with fewer stars.
+- `site-photos.sql` sets each site's photo, photographer credit and licence, applied on every start. It comes from
+  `node scripts/pick-site-photos.mjs`, which compares Wikidata's image, the lead image of the site's article on six
+  Wikipedias and photos in its Commons category, rejects maps, plans, drawings, renders, models, coins and other
+  non-photos, and prefers Commons Featured/Quality/Valued images. Sites with no suitable photo show a placeholder.
+  Downloaded candidates are cached in `scripts/.cache/` (git-ignored); add `--refresh` to fetch them again.
+
+### Using the map
+
+- Pins are coloured by civilization; the tip of each pin is the exact location.
+- Switch to **Satellite** (layers button, top left) and zoom in to see the actual ruins under a pin.
+- Open a pin to see its card. Tick **Mark as seen** (seen sites get a green tick on their pin).
+- Each card shows the site's **public rating** (paler stars) until you give it your own 1–5 stars, which then
+  take over. **Use public** (or clicking your current star again) goes back to the public rating.
+  Seen marks and your ratings are saved to your account.
+- **Want to visit** on a card adds the site to your wishlist (a pink bookmark badge on its pin); it is saved to
+  your account and is separate from "seen".
+- The **Explore** panel (top right) filters the map by All / Seen / Unseen / Wishlist, by civilization and by your rating.
+  Your filter choice is remembered in this browser.
+
+## AI Chat
+
+The **Chat** page talks to an AI through the backend (`POST /api/chat`), which calls OpenCode's
+OpenAI-compatible API. The key stays on the server:
+
+1. Create an API key in the [OpenCode Console](https://opencode.ai) (the account needs credit:
+   OpenCode's free models only work inside the OpenCode app).
+2. Put it in `roman-sites-backend/.env` (git-ignored) as `OPENCODE_API_KEY=...` and restart the backend.
+
+The model is `opencode.model` in `application.properties` (default `glm-5.3-flash`, a low-cost one).
+Each request includes a short summary of the sites you've seen and rated, so the AI can suggest what to visit next.
 
 ## Technologies Used
 

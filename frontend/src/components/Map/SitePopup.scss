@@ -1,79 +1,343 @@
-.site-popup {
-  width: 280px;
-  max-height: 400px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-
-  h3 {
-    margin-top: 0;
-    margin-bottom: 10px;
-    font-size: 16px;
-    line-height: 1.3;
-  }
-
-  .popup-image-container {
-    width: 100%;
-    height: 150px;
+// Leaflet's popup chrome, trimmed so the card fills it edge to edge.
+.site-card-popup {
+  .leaflet-popup-content-wrapper {
+    padding: 0;
+    border-radius: 14px;
     overflow: hidden;
-    margin-bottom: 10px;
-    border-radius: 4px;
-    background-color: #f0f0f0;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
   }
 
-  .popup-content {
-    flex: 1;
-    min-height: 0;
+  .leaflet-popup-content {
+    margin: 0;
+    width: 300px !important;
   }
 
-  p {
-    margin-bottom: 8px;
-    font-size: 14px;
-    line-height: 1.4;
-
-    &:last-of-type {
-      margin-bottom: 0;
-    }
-  }
-
-  .description {
-    max-height: 80px;
-    overflow-y: auto;
-    margin-bottom: 10px;
-    padding-right: 4px;
-
-    &::-webkit-scrollbar {
-      width: 4px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background-color: #ccc;
-      border-radius: 2px;
-    }
-  }
-
-  .toggle-visited-btn {
-    margin-top: 12px;
-    padding: 8px 12px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    transition: background-color 0.3s;
-    width: 100%;
+  .leaflet-popup-close-button {
+    top: 8px !important;
+    right: 8px !important;
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.45) !important;
+    color: #fff !important;
+    font: 20px/26px sans-serif !important;
+    z-index: 2;
 
     &:hover {
-      background-color: #45a049;
+      background: rgba(0, 0, 0, 0.7) !important;
+    }
+  }
+}
+
+.site-card {
+  font-family: 'Roboto', sans-serif;
+  color: #2b2b2b;
+
+  &__hero {
+    position: relative;
+    height: 190px;
+    overflow: hidden;
+    background: #e9e4d8;
+
+    .optimized-image-container {
+      position: absolute;
+      inset: 0;
+    }
+
+    .optimized-image {
+      transition: opacity 0.3s ease-in-out, transform 0.4s ease;
+    }
+
+    &:hover .optimized-image {
+      transform: scale(1.04);
+    }
+  }
+
+  // Lighter at the top than before, so the photo itself reads; dark only behind the title.
+  &__hero-shade {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0) 28%, rgba(0, 0, 0, 0) 55%, rgba(0, 0, 0, 0.7) 100%);
+    pointer-events: none;
+  }
+
+  // Covers the photo so a click opens it full size; badges and title sit above it.
+  &__hero-link {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    cursor: zoom-in;
+  }
+
+  &__credit {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 14px 0;
+    font-size: 10.5px;
+    color: #9a9a9a;
+
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  &__civ,
+  &__seen-badge {
+    position: absolute;
+    top: 10px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  &__civ {
+    left: 10px;
+  }
+
+  &__seen-badge {
+    left: auto;
+    right: 44px; // clear of the close button
+    background: #2e7d32;
+
+    &--want {
+      background: #c2185b;
+    }
+  }
+
+  &__title {
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: 10px;
+    margin: 0;
+    color: #fff;
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  &__body {
+    padding: 12px 14px 4px;
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+
+    span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: #f5f0e6;
+      color: #6b4a2b;
+      font-size: 12px;
+      font-weight: 500;
+    }
+  }
+
+  // .leaflet-container sets p margins, so be explicit.
+  &__description {
+    margin: 0 0 12px !important;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: #444;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  &__rating {
+    padding: 10px 0 8px;
+    border-top: 1px solid #eee;
+  }
+
+  &__label {
+    display: block;
+    margin-bottom: 2px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #8a8a8a;
+  }
+
+  &__rating-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+
+  &__reset {
+    border: none;
+    background: none;
+    padding: 0;
+    color: #8b4513;
+    font-size: 12px;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__stars {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  // Public (not mine) stars: a paler gold so the difference is visible at a glance.
+  &__stars--public .MuiRating-iconFilled {
+    color: #f3cf7a;
+  }
+
+  &__hint {
+    display: block;
+    margin-top: 2px;
+    font-size: 11.5px;
+    color: #999;
+  }
+
+  &__rating-text {
+    font-size: 13px;
+    color: #6b4a2b;
+    font-weight: 500;
+  }
+
+  &__footer {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+    padding: 10px 14px 14px;
+  }
+
+  &__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    margin: -4px 0 12px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #8b4513 !important;
+    text-decoration: none;
+    white-space: nowrap;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+// The two footer toggles share a size so they sit side by side as a pair.
+.seen-check,
+.want-toggle {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  user-select: none;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.want-toggle {
+  border: 2px solid #f8bbd0;
+  background: #fff;
+  color: #c2185b;
+  font-family: inherit;
+
+  &:hover {
+    background-color: #fdf0f5;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #1f5fbf;
+    outline-offset: 2px;
+  }
+
+  &--on {
+    background-color: #c2185b;
+    border-color: #c2185b;
+    color: #fff;
+
+    &:hover {
+      background-color: #a3134c;
+    }
+  }
+}
+
+.seen-check {
+  border: 2px solid #c8e6c9;
+  color: #2e7d32;
+
+  &:hover {
+    background-color: #f1f8f1;
+  }
+
+  input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  &__box {
+    width: 18px;
+    height: 18px;
+    flex: none;
+    border: 2px solid #2e7d32;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: transparent;
+    transition: background-color 0.15s, color 0.15s;
+  }
+
+  input:focus-visible + &__box {
+    outline: 2px solid #1f5fbf;
+    outline-offset: 2px;
+  }
+
+  &--on {
+    background-color: #2e7d32;
+    border-color: #2e7d32;
+    color: #fff;
+
+    &:hover {
+      background-color: #27692b;
+    }
+
+    .seen-check__box {
+      border-color: #fff;
+      background-color: #fff;
+      color: #2e7d32;
     }
   }
 }

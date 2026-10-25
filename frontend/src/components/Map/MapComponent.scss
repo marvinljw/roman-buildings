@@ -2,3 +2,71 @@
   height: calc(100vh - 60px);
   width: 100%;
 }
+
+// Site pins (see pins.ts). Leaflet sets the outer element's size and position;
+// the drop animation runs on the inner SVG so it never fights Leaflet's transform.
+.site-pin {
+  background: none;
+  border: none;
+
+  &__body {
+    display: block;
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.35));
+    transform-origin: 50% 100%;
+    animation: site-pin-drop 0.35s cubic-bezier(0.3, 1.5, 0.6, 1) both;
+    transition: transform 0.15s ease;
+  }
+
+  &:hover &__body {
+    transform: scale(1.15);
+  }
+
+  &__seen,
+  &__want {
+    position: absolute;
+    top: -4px;
+    right: -5px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #2e7d32;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: site-pin-pop 0.3s ease-out 0.2s both;
+  }
+
+  &__want {
+    background: #c2185b;
+  }
+}
+
+@keyframes site-pin-drop {
+  from {
+    transform: translateY(-18px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes site-pin-pop {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-pin__body,
+  .site-pin__seen,
+  .site-pin__want {
+    animation: none;
+  }
+}

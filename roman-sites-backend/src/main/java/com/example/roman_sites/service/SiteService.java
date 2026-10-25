@@ -1,6 +1,7 @@
 package com.example.roman_sites.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -24,12 +25,22 @@ public class SiteService {
     private SiteMapper siteMapper;
     @Autowired
     private VisitService visitService;
+    @Autowired
+    private RatingService ratingService;
+    @Autowired
+    private WishService wishService;
 
     public List<SiteResponse> getAllSites(String username) {
         Set<Long> visitedSiteIds = visitService.getVisitedSiteIds(username);
+        Map<Long, Integer> ratings = ratingService.getRatings(username);
+        Set<Long> wishedSiteIds = wishService.getWishedSiteIds(username);
 
         return repository.findAll().stream()
-                .map(site -> siteMapper.toResponse(site, visitedSiteIds.contains(site.getId())))
+                .map(site -> siteMapper.toResponse(
+                        site,
+                        visitedSiteIds.contains(site.getId()),
+                        ratings.get(site.getId()),
+                        wishedSiteIds.contains(site.getId())))
                 .collect(Collectors.toList());
     }
 

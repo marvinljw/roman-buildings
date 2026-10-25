@@ -10,6 +10,10 @@ import com.example.roman_sites.entity.Site;
 @Component
 public class SiteMapper {
     public SiteResponse toResponse(Site site, boolean visited) {
+        return toResponse(site, visited, null, false);
+    }
+
+    public SiteResponse toResponse(Site site, boolean visited, Integer myRating, boolean wantToVisit) {
         return new SiteResponse(
             site.getId(),
             site.getName(),
@@ -20,7 +24,13 @@ public class SiteMapper {
             site.getLongitude(),
             site.getCountry(),
             site.getYearBuilt(),
-            visited
+            visited,
+            site.getWikidataId(),
+            myRating,
+            site.getPublicRating(),
+            site.getImageCredit(),
+            site.getImageSourceUrl(),
+            wantToVisit
         );
     }
 
@@ -41,6 +51,7 @@ public class SiteMapper {
         site.setLongitude(request.longitude());
         site.setImageUrl(request.imageUrl());
         site.setCountry(request.country());
+        site.setYearBuilt(request.yearBuilt());
         return site;
     }
 }

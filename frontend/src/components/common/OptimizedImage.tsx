@@ -5,9 +5,11 @@ interface OptimizedImageProps {
   src: string;
   alt: string;
   className?: string;
+  // Shown instead of the default "Image unavailable" box if the image fails to load.
+  fallback?: React.ReactNode;
 }
 
-const OptimizedImage: React.FC<OptimizedImageProps> = ({ src, alt, className = '' }) => {
+const OptimizedImage: React.FC<OptimizedImageProps> = ({ src, alt, className = '', fallback }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
 
@@ -26,9 +28,11 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({ src, alt, className = '
         <div className="image-skeleton" />
       )}
       {hasError ? (
-        <div className="image-error">
-          <span>Image unavailable</span>
-        </div>
+        fallback ?? (
+          <div className="image-error">
+            <span>Image unavailable</span>
+          </div>
+        )
       ) : (
         <img
           src={src}

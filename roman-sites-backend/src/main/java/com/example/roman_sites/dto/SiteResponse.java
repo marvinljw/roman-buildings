@@ -10,5 +10,11 @@ public record SiteResponse(
     Double longitude,
     String country,
     Integer yearBuilt,
-    Boolean visited
+    Boolean visited,
+    String wikidataId,
+    Integer myRating,
+    Integer publicRating,
+    String imageCredit,
+    String imageSourceUrl,
+    Boolean wantToVisit
 ) {}

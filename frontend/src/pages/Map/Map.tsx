@@ -1,26 +1,41 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Marker, Popup, useMapEvents } from 'react-leaflet';
 import { Typography } from '@mui/material';
-import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import greenIcon from '../../assets/icons/marker-icon-green.png?url';
-import defaultIcon from '../../assets/icons/marker-icon.png?url';
 import MapComponent from '../../components/Map/MapComponent';
-import UploadLocationForm from '../../components/common/UploadLocationForm';
-import { getSites, markSiteAsVisited, unmarkSiteAsVisited } from '../../services';
+import FilterPanel from '../../components/Map/FilterPanel';
+import {
+  addToWantToVisit,
+  clearSiteRating,
+  getSites,
+  markSiteAsVisited,
+  rateSite,
+  removeFromWantToVisit,
+  unmarkSiteAsVisited,
+} from '../../services';
+import { Site, SiteFilters } from '../../types';
+import { DEFAULT_FILTERS, matchesFilters } from '../../utils/siteFilters';
+import { thumbnailUrl } from '../../utils/helpers';
 import './MapPage.scss';
 
-interface Site {
-  id: number;
-  name: string;
-  latitude: number;
-  longitude: number;
-  imageUrl: string;
-  description: string;
-  yearBuilt: number;
-  visited: boolean;
-  country: string;
-}
+const FILTERS_KEY = 'mapFilters';
+
+// Filters are a per-browser convenience; fall back to defaults if storage is unavailable.
+const loadFilters = (): SiteFilters => {
+  try {
+    const saved = localStorage.getItem(FILTERS_KEY);
+    return saved ? { ...DEFAULT_FILTERS, ...JSON.parse(saved) } : DEFAULT_FILTERS;
+  } catch {
+    return DEFAULT_FILTERS;
+  }
+};
+
+const saveFilters = (filters: SiteFilters) => {
+  try {
+    localStorage.setItem(FILTERS_KEY, JSON.stringify(filters));
+  } catch {
+    // Not critical: the filters just won't be remembered.
+  }
+};
 
 // Dummy data for Roman sites across Europe
 const dummySites: Site[] = [
@@ -33,7 +48,8 @@ const dummySites: Site[] = [
     description: "An iconic symbol of Imperial Rome and its architectural prowess.",
     yearBuilt: 80,
     visited: false,
-    country: "Italy"
+    country: "Italy",
+    civilization: "ROMAN"
   },
   // ... (other sites remain unchanged)
 ];
@@ -44,9 +60,18 @@ interface MapProps {
 
 const Map: React.FC<MapProps> = ({ setSites }) => {
   const [localSites, setLocalSites] = useState<Site[]>([]);
-  const [showSidebar, setShowSidebar] = useState(false);
-  const [newMarkerPosition, setNewMarkerPosition] = useState<[number, number] | null>(null);
   const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState<SiteFilters>(loadFilters);
+
+  const shownSites = useMemo(
+    () => localSites.filter(s => matchesFilters(s, filters)),
+    [localSites, filters]
+  );
+
+  const changeFilters = (next: SiteFilters) => {
+    setFilters(next);
+    saveFilters(next);
+  };
 
   const fetchSites = async () => {
     try {
@@ -56,11 +81,19 @@ const Map: React.FC<MapProps> = ({ setSites }) => {
         name: site.name,
         latitude: site.latitude,
         longitude: site.longitude,
-        imageUrl: site.imageUrl || 'https://via.placeholder.com/400x300?text=No+Image',
+        // Empty when no real photo was found; the card then shows a placeholder.
+        imageUrl: site.imageUrl ? thumbnailUrl(site.imageUrl) : '',
         description: site.description,
-        yearBuilt: site.yearBuilt || 0,
+        yearBuilt: site.yearBuilt ?? null,
         visited: site.visited || false,
-        country: site.country || 'Unknown'
+        country: site.country || 'Unknown',
+        civilization: site.civilization,
+        wikidataId: site.wikidataId,
+        myRating: site.myRating ?? null,
+        publicRating: site.publicRating ?? null,
+        imageCredit: site.imageCredit ?? null,
+        imageSourceUrl: site.imageSourceUrl ?? null,
+        wantToVisit: site.wantToVisit || false
       }));
       setLocalSites(transformedSites);
       setSites(transformedSites);
@@ -77,66 +110,66 @@ const Map: React.FC<MapProps> = ({ setSites }) => {
     fetchSites();
   }, [setSites]);
 
+  const updateSite = (id: number, changes: Partial<Site>) => {
+    const update = (sites: Site[]) => sites.map(s => (s.id === id ? { ...s, ...changes } : s));
+    setLocalSites(update);
+    setSites(update);
+  };
+
+  const setSeen = (id: number, seen: boolean) => updateSite(id, { visited: seen });
+
+  // Flip the tick straight away, and undo it if the backend rejects the change.
   const toggleVisited = async (id: number) => {
     const site = localSites.find(s => s.id === id);
     if (!site) return;
 
+    const nowSeen = !site.visited;
+    setSeen(id, nowSeen);
     try {
-      if (site.visited) {
-        await unmarkSiteAsVisited(id);
-      } else {
+      if (nowSeen) {
         await markSiteAsVisited(id);
+      } else {
+        await unmarkSiteAsVisited(id);
       }
-
-      // Refresh sites from backend to get updated visited status
-      await fetchSites();
     } catch (error) {
       console.error('Failed to toggle visited status:', error);
+      setSeen(id, !nowSeen);
     }
   };
 
-  const visitedIcon = useMemo(() => new L.Icon({
-    iconUrl: greenIcon,
-    iconSize: [30, 30],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-  }), []);
+  const toggleWant = async (id: number) => {
+    const site = localSites.find(s => s.id === id);
+    if (!site) return;
 
-  const defaultLeafletIcon = useMemo(() => new L.Icon({
-    iconUrl: defaultIcon,
-    iconSize: [30, 30],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-  }), []);
-
-  const handleNewLocation = (location: {
-    name: string;
-    latitude: number;
-    longitude: number;
-    description: string;
-    imageUrl: string;
-    yearBuilt: number;
-    country: string;
-  }) => {
-    const newSite: Site = {
-      id: localSites.length + 1,
-      ...location,
-      visited: false
-    };
-    setLocalSites(prevSites => [...prevSites, newSite]);
-    setShowSidebar(false);
-    setNewMarkerPosition(null);
+    const nowWanted = !site.wantToVisit;
+    updateSite(id, { wantToVisit: nowWanted });
+    try {
+      if (nowWanted) {
+        await addToWantToVisit(id);
+      } else {
+        await removeFromWantToVisit(id);
+      }
+    } catch (error) {
+      console.error('Failed to update want-to-visit list:', error);
+      updateSite(id, { wantToVisit: !nowWanted });
+    }
   };
 
-  const MapEvents = () => {
-    useMapEvents({
-      click: (e) => {
-        if (showSidebar) {
-          setNewMarkerPosition([e.latlng.lat, e.latlng.lng]);
-        }
-      },
-    });
-    return null;
+  // Same idea for stars: show the new rating at once, restore the old one if saving fails.
+  // Clicking the current star again clears the rating (rating === null).
+  const rate = async (id: number, rating: number | null) => {
+    const previous = localSites.find(s => s.id === id)?.myRating ?? null;
+    updateSite(id, { myRating: rating });
+    try {
+      if (rating === null) {
+        await clearSiteRating(id);
+      } else {
+        await rateSite(id, rating);
+      }
+    } catch (error) {
+      console.error('Failed to save rating:', error);
+      updateSite(id, { myRating: previous });
+    }
   };
 
   if (loading) {
@@ -150,46 +183,17 @@ const Map: React.FC<MapProps> = ({ setSites }) => {
   return (
     <div className="map-page">
       <MapComponent
-        sites={localSites}
+        sites={shownSites}
         onToggleVisited={toggleVisited}
-        visitedIcon={visitedIcon}
-        defaultIcon={defaultLeafletIcon}
-      >
-        <MapEvents />
-        {newMarkerPosition && (
-          <Marker position={newMarkerPosition} icon={defaultLeafletIcon}>
-            <Popup>
-              <div>
-                <p>New Location</p>
-                <p>Latitude: {newMarkerPosition[0].toFixed(4)}</p>
-                <p>Longitude: {newMarkerPosition[1].toFixed(4)}</p>
-              </div>
-            </Popup>
-          </Marker>
-        )}
-      </MapComponent>
-      <button
-        onClick={() => setShowSidebar(!showSidebar)}
-        className="map-page__add-location-btn"
-      >
-        {showSidebar ? 'Hide Sidebar' : 'Add New Location'}
-      </button>
-      {showSidebar && (
-        <div className="map-page__sidebar">
-          <button
-            onClick={() => setShowSidebar(false)}
-            className="map-page__sidebar-close"
-          >
-            &times;
-          </button>
-          <h2 className="map-page__sidebar-title">Add New Location</h2>
-          <UploadLocationForm
-            onLocationSubmit={handleNewLocation}
-            initialLatitude={newMarkerPosition ? newMarkerPosition[0] : undefined}
-            initialLongitude={newMarkerPosition ? newMarkerPosition[1] : undefined}
-          />
-        </div>
-      )}
+        onRate={rate}
+        onToggleWant={toggleWant}
+      />
+      <FilterPanel
+        sites={localSites}
+        filters={filters}
+        onChange={changeFilters}
+        shownCount={shownSites.length}
+      />
     </div>
   );
 };
